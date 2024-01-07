@@ -41,7 +41,7 @@ def get_species_at_location(
     """
     Retrieves a list of all species at a particular latitude and longitude.
 
-    If radius is specified, then all species within the specified radius of 
+    If radius is specified, then all species within the radius of 
     the given latitude and longitude are returned.
     """
     if radius:
