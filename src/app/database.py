@@ -12,17 +12,15 @@ DATABASE_URL = "sqlite:///db.sqlite"
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args=dict(check_same_thread=False)
 )
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-
-
-class Base(DeclarativeBase):
-    pass
 
 #
 # Database schema
 #
+class Base(DeclarativeBase):
+    pass
 
 class SurveyLocationDB(Base):
     __tablename__ = "surveylocation"
@@ -31,7 +29,6 @@ class SurveyLocationDB(Base):
     locality: Mapped[str] = mapped_column(nullable=True, default=None)
     latitude: Mapped[float] = mapped_column(index=True)
     longitude: Mapped[float] = mapped_column(index=True)
-
 
 class SpeciesDB(Base):
     __tablename__ = "species"
@@ -46,7 +43,6 @@ class SpeciesDB(Base):
     genus: Mapped[str]
     scientific_name_authorship: Mapped[str]
 
-
 class SpeciesLocationDB(Base):
     __tablename__ = "specieslocations"
 
@@ -59,6 +55,7 @@ class SpeciesLocationDB(Base):
         ForeignKey("species.id", ondelete='CASCADE'),
         index=True
     )
+
     survey_location = relationship(
         "SurveyLocationDB",
         backref=backref("species_locations", cascade="all")
@@ -68,6 +65,4 @@ class SpeciesLocationDB(Base):
         backref=backref("species_locations", cascade="all")
     )
 
-
 Base.metadata.create_all(engine)
-

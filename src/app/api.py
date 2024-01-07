@@ -17,10 +17,7 @@ from .utils import find_or_create_survey_location
 MAX_PAGE_SIZE = 100
 DEFAULT_PAGE_SIZE = 25
 
-api = FastAPI(
-    title="Species survey data API",
-    summary="Data on surveys of species at varying locations"
-)
+api = FastAPI(title="Species survey data API")
 
 def get_db():
     """
@@ -31,6 +28,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# API endpoints
 
 @api.get("/location/species", response_model=list[Species])
 def get_species_at_location(
@@ -68,8 +67,11 @@ def get_species_at_location(
         )
     )
 
-
-@api.get("/species", response_model=PaginatedResponse[Species])
+@api.get(
+    "/species",
+    response_model=PaginatedResponse[Species],
+    responses={404: dict(description="Page number out of range")}
+)
 def get_all_species(
     db: Session = Depends(get_db),
     page: Annotated[int, Query(ge=0)] = 0,
@@ -99,11 +101,11 @@ def get_all_species(
         data=species
     )
 
-
 @api.get(
     "/species/{scientific_name_id}/locations",
     response_model=list[SurveyLocation],
     response_model_exclude_none=True,
+    responses={404: dict(description="Species not found")}
 )
 def get_species_locations(
     scientific_name_id: int,
@@ -127,8 +129,10 @@ def get_species_locations(
         )
     )
 
-
-@api.delete("/species/{scientific_name_id}")
+@api.delete(
+    "/species/{scientific_name_id}",
+    responses={404: dict(description="Species not found")}
+)
 def delete_species(scientific_name_id: int, db: Session = Depends(get_db)):
     """
     Delete species with given id from the database.
@@ -144,7 +148,11 @@ def delete_species(scientific_name_id: int, db: Session = Depends(get_db)):
     return Response(status_code=200)
 
 
-@api.patch("/species/{scientific_name_id}", response_model=Species)
+@api.patch(
+    "/species/{scientific_name_id}",
+    response_model=Species,
+    responses={404: dict(description="Species not found")}
+)
 def patch_species(
     scientific_name_id: int,
     species_patch: SpeciesPatch,
@@ -169,7 +177,8 @@ def patch_species(
 
 @api.post(
     "/species/{scientific_name_id}/locations",
-    response_model=SpeciesLocationResponse
+    response_model=SpeciesLocationResponse,
+    responses={404: dict(description="Species not found")}
 )
 def report_species_location(
     scientific_name_id: int,
