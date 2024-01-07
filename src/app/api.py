@@ -178,7 +178,8 @@ def patch_species(
 @api.post(
     "/species/{scientific_name_id}/locations",
     response_model=SpeciesLocationResponse,
-    responses={404: dict(description="Species not found")}
+    responses={404: dict(description="Species not found")},
+    response_model_exclude_none=True
 )
 def report_species_location(
     scientific_name_id: int,
@@ -199,13 +200,14 @@ def report_species_location(
             detail=f"Species with id {scientific_name_id} not found"
         )
     survey_location: SurveyLocationDB = find_or_create_survey_location(
+        db,
         species_location.latitude,
         species_location.longitude
     )
     db.commit()
     species_location = SpeciesLocationDB(
         species_id=species.id,
-        location_id=survey_location.id
+        survey_location_id=survey_location.id
     )
     db.add(species_location)
     db.commit()
